@@ -1,0 +1,162 @@
+# .NET / Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+.vs/
+.vscode/
+*.code-workspace
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+.nuget/
+
+# Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# Angular / Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+dist/
+tmp/
+out-tsc/
+.angular/
+.sass-cache/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Database
+*.mdf
+*.ldf
+*.ndf
+*.sdf
+*.db
+*.db-shm
+*.db-wal
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# IDE - Rider
+.idea/
+*.sln.iml
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Secrets
+secrets/
+*.pfx
+*.p12
+*.key
+*.pem
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+*.swp
+*~
+
+# SQL Server backups
+*.bak
+
+# Entity Framework
+Migrations/*.Designer.cs
+*.dbmdl
+*.jfm
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+.idea_modules/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Angular specific
+.angular/cache/
+.angular/
