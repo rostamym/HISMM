@@ -1,0 +1,18 @@
+<div class="dashboard-container">
+  <h1>Patient Dashboard</h1>
+  <p>Welcome, {{ currentUser?.firstName }} {{ currentUser?.lastName }}!</p>
+
+  <div class="dashboard-content">
+    <h2>Quick Actions</h2>
+    <p>TODO: Implement patient dashboard features</p>
+    <ul>
+      <li>Search for doctors</li>
+      <li>Book appointments</li>
+      <li>View upcoming appointments</li>
+      <li>View appointment history</li>
+      <li>Update profile</li>
+    </ul>
+
+    <button (click)="logout()">Logout</button>
+  </div>
+</div>
