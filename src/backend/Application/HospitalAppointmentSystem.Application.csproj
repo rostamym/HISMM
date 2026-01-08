@@ -26,6 +26,9 @@
     <!-- Microsoft Extensions for DI and Options -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+
+    <!-- Entity Framework Core for DbSet and interfaces -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,5 @@
+using HospitalAppointmentSystem.Application.Features.Authentication.Commands.Register;
+using HospitalAppointmentSystem.Application.Features.Authentication.Commands.Login;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,15 +24,22 @@ public class AuthenticationController : ControllerBase
     /// <summary>
     /// Register a new user
     /// </summary>
-    /// <returns>Registration result with user ID</returns>
+    /// <returns>Registration result with authentication tokens and user information</returns>
     [HttpPost("register")]
-    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register()
+    public async Task<IActionResult> Register([FromBody] RegisterCommand command, CancellationToken cancellationToken)
     {
-        // TODO: Implement RegisterCommand
-        _logger.LogInformation("User registration requested");
-        return CreatedAtAction(nameof(Register), new { Message = "Register - To be implemented" });
+        _logger.LogInformation("User registration requested for email: {Email}", command.Email);
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { error = result.Error, errors = result.Errors });
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -40,11 +49,18 @@ public class AuthenticationController : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> Login()
+    public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken cancellationToken)
     {
-        // TODO: Implement LoginCommand
-        _logger.LogInformation("User login requested");
-        return Ok(new { Message = "Login - To be implemented" });
+        _logger.LogInformation("User login requested for email: {Email}", command.Email);
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return Unauthorized(new { error = result.Error, errors = result.Errors });
+        }
+
+        return Ok(result.Value);
     }
 
     /// <summary>

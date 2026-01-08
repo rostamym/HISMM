@@ -9,6 +9,7 @@ namespace HospitalAppointmentSystem.Domain.Entities;
 public class User : BaseEntity
 {
     public string Email { get; private set; } = null!;
+    public string PasswordHash { get; private set; } = null!;
     public string FirstName { get; private set; } = null!;
     public string LastName { get; private set; } = null!;
     public string? PhoneNumber { get; private set; }
@@ -19,21 +20,26 @@ public class User : BaseEntity
     // For EF Core
     private User() { }
 
-    private User(string email, string firstName, string lastName, DateTime dateOfBirth, UserRole role)
+    private User(string email, string passwordHash, string firstName, string lastName, string? phoneNumber, DateTime dateOfBirth, UserRole role)
     {
         Email = email;
+        PasswordHash = passwordHash;
         FirstName = firstName;
         LastName = lastName;
+        PhoneNumber = phoneNumber;
         DateOfBirth = dateOfBirth;
         Role = role;
         IsActive = true;
     }
 
-    public static User Create(string email, string firstName, string lastName, DateTime dateOfBirth, UserRole role)
+    public static User Create(string email, string passwordHash, string firstName, string lastName, string? phoneNumber, DateTime dateOfBirth, UserRole role)
     {
         // Validation
         if (string.IsNullOrWhiteSpace(email))
             throw new ArgumentException("Email is required", nameof(email));
+
+        if (string.IsNullOrWhiteSpace(passwordHash))
+            throw new ArgumentException("Password hash is required", nameof(passwordHash));
 
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ArgumentException("First name is required", nameof(firstName));
@@ -44,7 +50,7 @@ public class User : BaseEntity
         if (dateOfBirth >= DateTime.UtcNow)
             throw new ArgumentException("Date of birth must be in the past", nameof(dateOfBirth));
 
-        return new User(email, firstName, lastName, dateOfBirth, role);
+        return new User(email, passwordHash, firstName, lastName, phoneNumber, dateOfBirth, role);
     }
 
     public void UpdateProfile(string firstName, string lastName, string? phoneNumber)

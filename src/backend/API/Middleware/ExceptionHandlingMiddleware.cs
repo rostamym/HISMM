@@ -27,7 +27,24 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            // Log detailed error information
+            _logger.LogError(ex,
+                "Unhandled exception occurred\n" +
+                "Path: {Path}\n" +
+                "Method: {Method}\n" +
+                "User: {User}\n" +
+                "RemoteIP: {RemoteIP}\n" +
+                "Exception Type: {ExceptionType}\n" +
+                "Message: {Message}\n" +
+                "StackTrace: {StackTrace}",
+                context.Request.Path,
+                context.Request.Method,
+                context.User?.Identity?.Name ?? "Anonymous",
+                context.Connection.RemoteIpAddress,
+                ex.GetType().Name,
+                ex.Message,
+                ex.StackTrace);
+
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -36,6 +53,7 @@ public class ExceptionHandlingMiddleware
     {
         HttpStatusCode statusCode;
         string message;
+        object? details = null;
 
         switch (exception)
         {
@@ -64,9 +82,25 @@ public class ExceptionHandlingMiddleware
                 message = exception.Message;
                 break;
 
+            case Microsoft.Data.SqlClient.SqlException sqlException:
+                statusCode = HttpStatusCode.InternalServerError;
+                message = "A database error occurred. Please try again later.";
+                details = new { ErrorNumber = sqlException.Number, SqlState = sqlException.State };
+                break;
+
             default:
                 statusCode = HttpStatusCode.InternalServerError;
                 message = "An internal server error occurred. Please try again later.";
+                // In development, include more details
+                if (context.RequestServices.GetService<IWebHostEnvironment>()?.IsDevelopment() == true)
+                {
+                    details = new
+                    {
+                        ExceptionType = exception.GetType().Name,
+                        ExceptionMessage = exception.Message,
+                        StackTrace = exception.StackTrace
+                    };
+                }
                 break;
         }
 
@@ -74,7 +108,9 @@ public class ExceptionHandlingMiddleware
         {
             StatusCode = (int)statusCode,
             Message = message,
-            Timestamp = DateTime.UtcNow
+            Details = details,
+            Timestamp = DateTime.UtcNow,
+            Path = context.Request.Path.ToString()
         };
 
         context.Response.ContentType = "application/json";
@@ -82,7 +118,8 @@ public class ExceptionHandlingMiddleware
 
         var jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
         return context.Response.WriteAsync(JsonSerializer.Serialize(response, jsonOptions));

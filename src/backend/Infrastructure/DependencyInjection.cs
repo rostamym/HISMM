@@ -1,6 +1,7 @@
 using HospitalAppointmentSystem.Application.Common.Interfaces;
 using HospitalAppointmentSystem.Infrastructure.Persistence;
 using HospitalAppointmentSystem.Infrastructure.Services;
+using HospitalAppointmentSystem.Infrastructure.Services.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,11 @@ public static class DependencyInjection
         services.AddTransient<IDateTime, DateTimeService>();
         services.AddTransient<IEmailService, EmailService>();
 
-        // TODO: Add Identity, JWT, Hangfire, etc.
+        // Authentication Services
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+        // TODO: Add Identity, Hangfire, etc.
 
         return services;
     }

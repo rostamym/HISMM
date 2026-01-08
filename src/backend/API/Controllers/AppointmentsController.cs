@@ -41,7 +41,7 @@ public class AppointmentsController : ControllerBase
 
         var result = await _mediator.Send(command, cancellationToken);
 
-        if (!result.Succeeded)
+        if (!result.IsSuccess)
         {
             return BadRequest(new { Error = result.Error });
         }

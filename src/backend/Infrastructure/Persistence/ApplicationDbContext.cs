@@ -1,5 +1,6 @@
 using System.Reflection;
 using HospitalAppointmentSystem.Application.Common.Interfaces;
+using HospitalAppointmentSystem.Domain.Common;
 using HospitalAppointmentSystem.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Ignore abstract base classes that shouldn't be mapped to tables
+        modelBuilder.Ignore<BaseDomainEvent>();
+
         // Apply all configurations from current assembly
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
