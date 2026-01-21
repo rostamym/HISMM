@@ -16,15 +16,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly IApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
+    private readonly IEmailService _emailService;
 
     public RegisterCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
-        IJwtTokenService jwtTokenService)
+        IJwtTokenService jwtTokenService,
+        IEmailService emailService)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
+        _emailService = emailService;
     }
 
     public async Task<Result<AuthenticationResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -62,6 +65,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         await _context.SaveChangesAsync(cancellationToken);
 
         // If role is Doctor or Patient, create corresponding entity
+        Guid? patientId = null;
+        Guid? doctorId = null;
+
         if (userRole == UserRole.Doctor)
         {
             // For registration, we'll create a minimal Doctor profile
@@ -73,13 +79,31 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         {
             var patient = Patient.Create(user.Id);
             _context.Patients.Add(patient);
+            await _context.SaveChangesAsync(cancellationToken);
+            patientId = patient.Id;
         }
-
-        await _context.SaveChangesAsync(cancellationToken);
 
         // Generate tokens
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
         var refreshToken = _jwtTokenService.GenerateRefreshToken();
+
+        // Send registration confirmation email (fire and forget - don't block response)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await _emailService.SendRegistrationConfirmationAsync(
+                    user.Email,
+                    user.FirstName,
+                    user.LastName,
+                    cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Log error but don't fail registration if email fails
+                // Email failures shouldn't prevent user registration
+            }
+        }, cancellationToken);
 
         // Create response
         var response = new AuthenticationResponse
@@ -94,7 +118,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = user.DateOfBirth,
-                Role = user.Role.ToString()
+                Role = user.Role.ToString(),
+                PatientId = patientId,
+                DoctorId = doctorId
             }
         };
 

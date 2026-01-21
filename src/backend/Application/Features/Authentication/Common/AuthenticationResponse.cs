@@ -22,4 +22,6 @@ public class UserDto
     public string PhoneNumber { get; set; } = string.Empty;
     public DateTime? DateOfBirth { get; set; }
     public string Role { get; set; } = string.Empty;
+    public Guid? PatientId { get; set; }
+    public Guid? DoctorId { get; set; }
 }

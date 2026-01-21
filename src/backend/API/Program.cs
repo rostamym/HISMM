@@ -1,5 +1,6 @@
 using HospitalAppointmentSystem.Application;
 using HospitalAppointmentSystem.Infrastructure;
+using HospitalAppointmentSystem.Infrastructure.Persistence;
 using HospitalAppointmentSystem.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -145,6 +146,24 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+    // Seed database with initial data
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DatabaseSeeder>>();
+
+        try
+        {
+            Log.Information("Checking if database needs seeding...");
+            var seeder = new DatabaseSeeder(context, logger);
+            await seeder.SeedAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while seeding the database");
+        }
+    }
 
     Log.Information("Hospital Appointment System API started successfully");
     app.Run();

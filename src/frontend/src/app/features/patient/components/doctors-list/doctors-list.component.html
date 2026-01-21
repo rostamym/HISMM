@@ -1,0 +1,152 @@
+<div class="doctors-list-container">
+  <h1>Find a Doctor</h1>
+
+  <!-- Search and Filter Section -->
+  <div class="search-section">
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchName"
+        placeholder="Search by doctor name..."
+        class="search-input"
+        (keyup.enter)="searchDoctors()"
+      />
+      <button class="btn btn-primary" (click)="searchDoctors()">
+        Search
+      </button>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label>Specialty:</label>
+        <select [(ngModel)]="selectedSpecialtyId" class="form-select">
+          <option [value]="null">All Specialties</option>
+          <option *ngFor="let specialty of specialties" [value]="specialty.id">
+            {{ specialty.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Consultation Fee Range:</label>
+        <div class="fee-range">
+          <input
+            type="number"
+            [(ngModel)]="minFee"
+            placeholder="Min"
+            class="form-input"
+          />
+          <span>-</span>
+          <input
+            type="number"
+            [(ngModel)]="maxFee"
+            placeholder="Max"
+            class="form-input"
+          />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="isAvailableOnly"
+          />
+          Available Today Only
+        </label>
+      </div>
+
+      <button class="btn btn-secondary" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Loading doctors...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="loadDoctors()">Retry</button>
+  </div>
+
+  <!-- Doctors List -->
+  <div *ngIf="!loading && !error" class="doctors-grid">
+    <div *ngIf="doctors.length === 0" class="no-results">
+      <p>No doctors found matching your criteria.</p>
+      <button class="btn btn-primary" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+
+    <div *ngFor="let doctor of doctors" class="doctor-card">
+      <div class="doctor-header">
+        <div class="doctor-avatar">
+          <span>{{ doctor.user.firstName[0] }}{{ doctor.user.lastName[0] }}</span>
+        </div>
+        <div class="doctor-info">
+          <h3>Dr. {{ doctor.user.firstName }} {{ doctor.user.lastName }}</h3>
+          <p class="specialty">{{ doctor.specialty.name }}</p>
+          <div class="rating" *ngIf="doctor.rating">
+            <span class="stars">★★★★★</span>
+            <span class="rating-value">{{ doctor.rating.toFixed(1) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-details">
+        <p class="experience">
+          <strong>Experience:</strong> {{ doctor.yearsOfExperience }} years
+        </p>
+        <p class="fee" *ngIf="doctor.consultationFee">
+          <strong>Consultation Fee:</strong> ${{ doctor.consultationFee }}
+        </p>
+        <p class="bio" *ngIf="doctor.biography">
+          {{ doctor.biography | slice:0:150 }}{{ doctor.biography.length > 150 ? '...' : '' }}
+        </p>
+      </div>
+
+      <div class="doctor-actions">
+        <button
+          class="btn btn-outline"
+          (click)="viewDoctorDetails(doctor.id)"
+        >
+          View Profile
+        </button>
+        <button
+          class="btn btn-primary"
+          (click)="bookAppointment(doctor.id)"
+        >
+          Book Appointment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && doctors.length > 0" class="pagination">
+    <button
+      class="btn btn-secondary"
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)"
+    >
+      Previous
+    </button>
+
+    <span class="page-info">
+      Page {{ currentPage }} of {{ totalPages }} ({{ totalCount }} doctors)
+    </span>
+
+    <button
+      class="btn btn-secondary"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)"
+    >
+      Next
+    </button>
+  </div>
+</div>

@@ -17,7 +17,8 @@ export const API_ENDPOINTS = {
     BASE: `${API_BASE}/doctors`,
     BY_ID: (id: string) => `${API_BASE}/doctors/${id}`,
     SEARCH: `${API_BASE}/doctors/search`,
-    AVAILABILITY: (id: string) => `${API_BASE}/doctors/${id}/availability`
+    AVAILABILITY: (id: string) => `${API_BASE}/doctors/${id}/availability`,
+    AVAILABLE_SLOTS: (id: string) => `${API_BASE}/doctors/${id}/available-slots`
   },
 
   // Appointments

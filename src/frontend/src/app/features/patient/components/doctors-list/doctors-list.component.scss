@@ -1,0 +1,276 @@
+.doctors-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+}
+
+.search-section {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.search-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .search-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+  }
+
+  .form-select,
+  .form-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+  }
+}
+
+.fee-range {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .form-input {
+    width: 100px;
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+}
+
+.loading,
+.error-message,
+.no-results {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.error-message {
+  color: #dc3545;
+}
+
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.doctor-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.doctor-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doctor-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.doctor-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+
+  .specialty {
+    margin: 0 0 0.5rem 0;
+    color: #667eea;
+    font-weight: 500;
+  }
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .stars {
+    color: #ffc107;
+    font-size: 1rem;
+  }
+
+  .rating-value {
+    color: #666;
+    font-size: 0.9rem;
+  }
+}
+
+.doctor-details {
+  margin-bottom: 1rem;
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #666;
+
+    strong {
+      color: #333;
+    }
+  }
+
+  .bio {
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+}
+
+.doctor-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #0056b3;
+  }
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: #545b62;
+  }
+}
+
+.btn-outline {
+  background: transparent;
+  color: #007bff;
+  border: 1px solid #007bff;
+
+  &:hover:not(:disabled) {
+    background: #007bff;
+    color: white;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 0;
+
+  .page-info {
+    color: #666;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .doctor-actions {
+    flex-direction: column;
+  }
+}

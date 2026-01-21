@@ -1,0 +1,138 @@
+<div class="book-appointment-container">
+  <h1>Book Appointment</h1>
+
+  <!-- Doctor Info Card -->
+  <div *ngIf="doctor" class="doctor-info-card">
+    <div class="doctor-avatar">
+      <span>{{ doctor.user.firstName[0] }}{{ doctor.user.lastName[0] }}</span>
+    </div>
+    <div class="doctor-details">
+      <h2>Dr. {{ doctor.user.firstName }} {{ doctor.user.lastName }}</h2>
+      <p class="specialty">{{ doctor.specialty.name }}</p>
+      <p class="fee" *ngIf="doctor.consultationFee">
+        Consultation Fee: ${{ doctor.consultationFee }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="success" class="success-message">
+    <div class="success-icon">✓</div>
+    <h2>Appointment Booked Successfully!</h2>
+    <p>You will be redirected to the appointment details...</p>
+  </div>
+
+  <!-- Booking Form -->
+  <form
+    *ngIf="!success"
+    [formGroup]="bookingForm"
+    (ngSubmit)="onSubmit()"
+    class="booking-form"
+  >
+    <!-- Date Selection -->
+    <div class="form-group">
+      <label for="scheduledDate">Appointment Date *</label>
+      <input
+        id="scheduledDate"
+        type="date"
+        formControlName="scheduledDate"
+        [min]="minDate"
+        [max]="maxDate"
+        class="form-control"
+        [class.invalid]="isFieldInvalid('scheduledDate')"
+      />
+      <span *ngIf="isFieldInvalid('scheduledDate')" class="error-message">
+        {{ getFieldError('scheduledDate') }}
+      </span>
+    </div>
+
+    <!-- Time Selection -->
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startTime">Start Time *</label>
+        <input
+          id="startTime"
+          type="time"
+          formControlName="startTime"
+          class="form-control"
+          [class.invalid]="isFieldInvalid('startTime')"
+        />
+        <span *ngIf="isFieldInvalid('startTime')" class="error-message">
+          {{ getFieldError('startTime') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="endTime">End Time *</label>
+        <input
+          id="endTime"
+          type="time"
+          formControlName="endTime"
+          class="form-control"
+          [class.invalid]="isFieldInvalid('endTime')"
+        />
+        <span *ngIf="isFieldInvalid('endTime')" class="error-message">
+          {{ getFieldError('endTime') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Reason for Visit -->
+    <div class="form-group">
+      <label for="reason">Reason for Visit *</label>
+      <textarea
+        id="reason"
+        formControlName="reason"
+        rows="4"
+        placeholder="Please describe your symptoms or reason for the appointment..."
+        class="form-control"
+        [class.invalid]="isFieldInvalid('reason')"
+      ></textarea>
+      <div class="field-info">
+        <span *ngIf="isFieldInvalid('reason')" class="error-message">
+          {{ getFieldError('reason') }}
+        </span>
+        <span class="char-count">
+          {{ bookingForm.get('reason')?.value?.length || 0 }} / 500 characters
+        </span>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="error-alert">
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="cancel()"
+        [disabled]="loading"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="loading || bookingForm.invalid"
+      >
+        <span *ngIf="!loading">Book Appointment</span>
+        <span *ngIf="loading">Booking...</span>
+      </button>
+    </div>
+  </form>
+
+  <!-- Important Information -->
+  <div *ngIf="!success" class="info-box">
+    <h3>Important Information</h3>
+    <ul>
+      <li>Please arrive 10 minutes before your scheduled appointment time.</li>
+      <li>Bring any relevant medical records or test results.</li>
+      <li>You will receive a confirmation email shortly after booking.</li>
+      <li>You can cancel or reschedule your appointment up to 24 hours in advance.</li>
+      <li>Late cancellations may be subject to a cancellation fee.</li>
+    </ul>
+  </div>
+</div>

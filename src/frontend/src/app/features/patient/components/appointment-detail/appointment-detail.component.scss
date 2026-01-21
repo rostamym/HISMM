@@ -1,0 +1,359 @@
+.appointment-detail-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 60px 20px;
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2196F3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+
+  .back-button {
+    background: none;
+    border: none;
+    color: #2196F3;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 15px;
+    padding: 5px 0;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .back-icon {
+      font-size: 20px;
+    }
+  }
+
+  h1 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 28px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.section {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+  }
+}
+
+.doctor-info {
+  display: flex;
+  gap: 20px;
+  align-items: start;
+
+  .doctor-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+
+  .doctor-details {
+    flex: 1;
+
+    h3 {
+      margin: 0 0 8px 0;
+      color: #333;
+      font-size: 22px;
+    }
+
+    .specialty {
+      color: #2196F3;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+    }
+
+    .license, .contact {
+      color: #666;
+      margin: 4px 0;
+      font-size: 14px;
+    }
+  }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+
+  .info-item {
+    label {
+      display: block;
+      font-weight: 600;
+      color: #666;
+      font-size: 13px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    p {
+      margin: 0;
+      color: #333;
+      font-size: 16px;
+    }
+
+    &.full-width {
+      grid-column: span 2;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background-color: #2196F3;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #1976D2;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: #757575;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #616161;
+    }
+  }
+
+  &.btn-danger {
+    background-color: #f44336;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #d32f2f;
+    }
+  }
+}
+
+// Status Badge Colors
+.status-scheduled {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-confirmed {
+  background-color: #c8e6c9;
+  color: #388e3c;
+}
+
+.status-in-progress {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-cancelled {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-no-show {
+  background-color: #fce4ec;
+  color: #c2185b;
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 24px;
+  }
+
+  > p {
+    color: #666;
+    margin: 0 0 25px 0;
+  }
+}
+
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  .error-message {
+    background-color: transparent;
+    color: #f44336;
+    padding: 5px 0 0 0;
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+
+    .info-item.full-width {
+      grid-column: span 1;
+    }
+  }
+
+  .doctor-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .actions {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

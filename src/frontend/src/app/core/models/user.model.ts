@@ -13,6 +13,9 @@ export interface User {
   phoneNumber?: string;
   dateOfBirth?: Date;
   isActive: boolean;
+  // Role-specific IDs
+  patientId?: string;
+  doctorId?: string;
 }
 
 export interface AuthResponse {

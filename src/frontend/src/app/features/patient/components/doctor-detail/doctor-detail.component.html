@@ -1,0 +1,135 @@
+<div class="doctor-detail-container">
+  <!-- Back Button -->
+  <button class="btn-back" (click)="goBack()">
+    ← Back to Doctors
+  </button>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Loading doctor details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="goBack()">Back to List</button>
+  </div>
+
+  <!-- Doctor Details -->
+  <div *ngIf="!loading && !error && doctor" class="doctor-profile">
+    <!-- Doctor Header -->
+    <div class="doctor-header">
+      <div class="doctor-avatar">
+        <span>{{ doctor.user.firstName[0] }}{{ doctor.user.lastName[0] }}</span>
+      </div>
+      <div class="doctor-info">
+        <h1>Dr. {{ doctor.user.firstName }} {{ doctor.user.lastName }}</h1>
+        <p class="specialty">{{ doctor.specialty.name }}</p>
+        <div class="rating" *ngIf="doctor.rating">
+          <span class="stars">★★★★★</span>
+          <span class="rating-value">{{ doctor.rating.toFixed(1) }} / 5.0</span>
+        </div>
+        <p class="license">License: {{ doctor.licenseNumber }}</p>
+      </div>
+      <div class="quick-book">
+        <button class="btn btn-primary btn-large" (click)="bookAppointment()">
+          Book Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- Doctor Details Grid -->
+    <div class="details-grid">
+      <!-- About Section -->
+      <div class="detail-section">
+        <h2>About</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <strong>Experience:</strong>
+            <span>{{ doctor.yearsOfExperience }} years</span>
+          </div>
+          <div class="info-item" *ngIf="doctor.consultationFee">
+            <strong>Consultation Fee:</strong>
+            <span>${{ doctor.consultationFee }}</span>
+          </div>
+          <div class="info-item">
+            <strong>Email:</strong>
+            <span>{{ doctor.user.email }}</span>
+          </div>
+          <div class="info-item" *ngIf="doctor.user.phoneNumber">
+            <strong>Phone:</strong>
+            <span>{{ doctor.user.phoneNumber }}</span>
+          </div>
+        </div>
+        <div class="biography" *ngIf="doctor.biography">
+          <h3>Biography</h3>
+          <p>{{ doctor.biography }}</p>
+        </div>
+      </div>
+
+      <!-- Weekly Schedule -->
+      <div class="detail-section">
+        <h2>Weekly Schedule</h2>
+        <div class="schedule-list">
+          <div *ngFor="let day of daysOfWeek; let i = index" class="schedule-item">
+            <span class="day-name">{{ day }}</span>
+            <span class="day-hours" *ngIf="getDaySchedule(i); else notAvailable">
+              {{ getDaySchedule(i)?.formattedStartTime }} - {{ getDaySchedule(i)?.formattedEndTime }}
+            </span>
+            <ng-template #notAvailable>
+              <span class="not-available">Not Available</span>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointment Booking Section -->
+    <div class="booking-section">
+      <h2>Book an Appointment</h2>
+
+      <div class="date-selector">
+        <label for="appointment-date">Select Date:</label>
+        <input
+          id="appointment-date"
+          type="date"
+          [value]="formatDate(selectedDate)"
+          [min]="minDate"
+          [max]="maxDate"
+          (change)="onDateInputChange($event)"
+          class="date-input"
+        />
+      </div>
+
+      <!-- Available Slots -->
+      <div class="slots-section">
+        <h3>Available Time Slots for {{ selectedDate | date:'fullDate' }}</h3>
+
+        <div *ngIf="loadingSlots" class="loading-slots">
+          <p>Loading available slots...</p>
+        </div>
+
+        <div *ngIf="slotsError" class="error-message">
+          <p>{{ slotsError }}</p>
+        </div>
+
+        <div *ngIf="!loadingSlots && !slotsError && availableSlots.length === 0" class="no-slots">
+          <p>No available slots for this date. Please select another date.</p>
+        </div>
+
+        <div *ngIf="!loadingSlots && !slotsError && availableSlots.length > 0" class="slots-grid">
+          <button
+            *ngFor="let slot of availableSlots"
+            class="slot-button"
+            [class.booked]="slot.isBooked"
+            [disabled]="slot.isBooked"
+            (click)="bookAppointment(slot)"
+          >
+            <span class="slot-time">{{ slot.formattedTime }}</span>
+            <span *ngIf="slot.isBooked" class="slot-status">Booked</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

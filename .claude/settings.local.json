@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

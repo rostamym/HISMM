@@ -1,0 +1,121 @@
+<div class="appointments-container">
+  <h1>My Appointments</h1>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button
+      class="tab"
+      [class.active]="selectedFilter === 'all'"
+      (click)="applyFilter('all')"
+    >
+      All ({{ appointments.length }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedFilter === 'upcoming'"
+      (click)="applyFilter('upcoming')"
+    >
+      Upcoming ({{ upcomingCount }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedFilter === 'past'"
+      (click)="applyFilter('past')"
+    >
+      Past ({{ pastCount }})
+    </button>
+    <button
+      class="tab"
+      [class.active]="selectedFilter === 'cancelled'"
+      (click)="applyFilter('cancelled')"
+    >
+      Cancelled ({{ cancelledCount }})
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Loading appointments...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="loadAppointments()">Retry</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && filteredAppointments.length === 0" class="empty-state">
+    <div class="empty-icon">📅</div>
+    <h2>No {{ selectedFilter === 'all' ? '' : selectedFilter }} appointments found</h2>
+    <p *ngIf="selectedFilter === 'upcoming'">
+      You don't have any upcoming appointments. Book one now!
+    </p>
+    <button
+      *ngIf="selectedFilter === 'upcoming'"
+      class="btn btn-primary"
+      routerLink="/patient/doctors"
+    >
+      Find a Doctor
+    </button>
+  </div>
+
+  <!-- Appointments List -->
+  <div *ngIf="!loading && !error && filteredAppointments.length > 0" class="appointments-list">
+    <div *ngFor="let appointment of filteredAppointments" class="appointment-card">
+      <!-- Status Badge -->
+      <div class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+        {{ getStatusDisplay(appointment.status) }}
+      </div>
+
+      <!-- Appointment Header -->
+      <div class="appointment-header">
+        <div class="doctor-info">
+          <div class="doctor-avatar">
+            <span>{{ appointment.doctor.firstName[0] }}{{ appointment.doctor.lastName[0] }}</span>
+          </div>
+          <div class="doctor-details">
+            <h3>{{ appointment.doctor.fullName }}</h3>
+            <p class="specialty">{{ appointment.doctor.specialtyName }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment Details -->
+      <div class="appointment-details">
+        <div class="detail-row">
+          <span class="label">Date:</span>
+          <span class="value">{{ formatDate(appointment.scheduledDate) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Time:</span>
+          <span class="value">{{ appointment.formattedTime || appointment.startTime }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Duration:</span>
+          <span class="value">{{ appointment.durationMinutes || 30 }} minutes</span>
+        </div>
+        <div class="detail-row" *ngIf="appointment.doctor.consultationFee">
+          <span class="label">Fee:</span>
+          <span class="value">${{ appointment.doctor.consultationFee }}</span>
+        </div>
+      </div>
+
+      <!-- Reason -->
+      <div class="appointment-reason">
+        <strong>Reason:</strong>
+        <p>{{ appointment.reason }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="appointment-actions">
+        <button
+          class="btn btn-outline"
+          (click)="viewAppointmentDetails(appointment.id)"
+        >
+          View Details
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

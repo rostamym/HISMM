@@ -1,0 +1,173 @@
+<div class="appointment-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading appointment details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="goBack()">Back to Appointments</button>
+  </div>
+
+  <!-- Appointment Details -->
+  <div *ngIf="appointment && !loading" class="appointment-detail">
+    <!-- Header -->
+    <div class="detail-header">
+      <button class="back-button" (click)="goBack()">
+        <span class="back-icon">←</span> Back to Appointments
+      </button>
+      <h1>Appointment Details</h1>
+      <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+        {{ appointment.status }}
+      </span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="detail-content">
+      <!-- Doctor Information -->
+      <div class="section doctor-section">
+        <h2>Doctor Information</h2>
+        <div class="doctor-info">
+          <div class="doctor-avatar">
+            {{ appointment.doctor.firstName.charAt(0) }}{{ appointment.doctor.lastName.charAt(0) }}
+          </div>
+          <div class="doctor-details">
+            <h3>Dr. {{ appointment.doctor.firstName }} {{ appointment.doctor.lastName }}</h3>
+            <p class="specialty">{{ appointment.doctor.specialtyName }}</p>
+            <p class="license">License: {{ appointment.doctor.licenseNumber }}</p>
+            <p class="contact">{{ appointment.doctor.email }}</p>
+            <p class="contact" *ngIf="appointment.doctor.phoneNumber">{{ appointment.doctor.phoneNumber }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment Information -->
+      <div class="section appointment-info-section">
+        <h2>Appointment Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Date</label>
+            <p>{{ appointment.scheduledDate | date: 'EEEE, MMMM d, y' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Time</label>
+            <p>{{ appointment.startTime }} - {{ appointment.endTime }}</p>
+          </div>
+          <div class="info-item">
+            <label>Duration</label>
+            <p>{{ appointment.durationMinutes }} minutes</p>
+          </div>
+          <div class="info-item">
+            <label>Consultation Fee</label>
+            <p>${{ appointment.doctor.consultationFee | number: '1.2-2' }}</p>
+          </div>
+          <div class="info-item full-width">
+            <label>Reason for Visit</label>
+            <p>{{ appointment.reason }}</p>
+          </div>
+          <div class="info-item full-width" *ngIf="appointment.notes">
+            <label>Notes</label>
+            <p>{{ appointment.notes }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="section actions-section" *ngIf="canCancel() || canReschedule()">
+        <h2>Actions</h2>
+        <div class="actions">
+          <button
+            *ngIf="canReschedule()"
+            class="btn btn-secondary"
+            (click)="openRescheduleDialog()">
+            Reschedule Appointment
+          </button>
+          <button
+            *ngIf="canCancel()"
+            class="btn btn-danger"
+            (click)="openCancelDialog()">
+            Cancel Appointment
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Dialog -->
+  <div class="modal-overlay" *ngIf="showCancelDialog" (click)="closeCancelDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Cancel Appointment</h2>
+      <p>Are you sure you want to cancel this appointment?</p>
+
+      <form [formGroup]="cancelForm" (ngSubmit)="confirmCancel()">
+        <div class="form-group">
+          <label for="reason">Cancellation Reason *</label>
+          <textarea
+            id="reason"
+            formControlName="reason"
+            rows="4"
+            placeholder="Please provide a reason for cancellation (minimum 10 characters)">
+          </textarea>
+          <div class="error-message" *ngIf="cancelForm.get('reason')?.invalid && cancelForm.get('reason')?.touched">
+            <span *ngIf="cancelForm.get('reason')?.errors?.['required']">Reason is required</span>
+            <span *ngIf="cancelForm.get('reason')?.errors?.['minlength']">
+              Reason must be at least 10 characters
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCancelDialog()" [disabled]="canceling">
+            Keep Appointment
+          </button>
+          <button type="submit" class="btn btn-danger" [disabled]="cancelForm.invalid || canceling">
+            {{ canceling ? 'Canceling...' : 'Confirm Cancellation' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reschedule Dialog -->
+  <div class="modal-overlay" *ngIf="showRescheduleDialog" (click)="closeRescheduleDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Reschedule Appointment</h2>
+      <p>Select a new date and time for your appointment.</p>
+
+      <form [formGroup]="rescheduleForm" (ngSubmit)="confirmReschedule()">
+        <div class="form-group">
+          <label for="newDate">New Date *</label>
+          <input
+            type="date"
+            id="newDate"
+            formControlName="newDate"
+            [min]="minRescheduleDate"
+            [max]="maxRescheduleDate">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newStartTime">Start Time *</label>
+            <input type="time" id="newStartTime" formControlName="newStartTime">
+          </div>
+
+          <div class="form-group">
+            <label for="newEndTime">End Time *</label>
+            <input type="time" id="newEndTime" formControlName="newEndTime">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeRescheduleDialog()" [disabled]="rescheduling">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="rescheduleForm.invalid || rescheduling">
+            {{ rescheduling ? 'Rescheduling...' : 'Confirm Reschedule' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

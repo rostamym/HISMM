@@ -2,6 +2,7 @@ using HospitalAppointmentSystem.Application.Common.Interfaces;
 using HospitalAppointmentSystem.Infrastructure.Persistence;
 using HospitalAppointmentSystem.Infrastructure.Services;
 using HospitalAppointmentSystem.Infrastructure.Services.Authentication;
+using HospitalAppointmentSystem.Infrastructure.Services.Email;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,9 @@ public static class DependencyInjection
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        // Configuration
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
 
         // Services
         services.AddTransient<IDateTime, DateTimeService>();
