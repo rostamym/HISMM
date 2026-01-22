@@ -87,12 +87,28 @@ public class Appointment : BaseEntity
         AddDomainEvent(new AppointmentCancelledEvent(Id, PatientId, DoctorId));
     }
 
-    public void Complete()
+    public void Complete(string? notes = null)
     {
-        if (Status != AppointmentStatus.Confirmed && Status != AppointmentStatus.InProgress)
-            throw new InvalidOperationException("Only confirmed or in-progress appointments can be completed");
+        if (Status == AppointmentStatus.Cancelled)
+            throw new InvalidOperationException("Cannot complete a cancelled appointment");
+
+        if (Status == AppointmentStatus.Completed)
+            throw new InvalidOperationException("Appointment is already completed");
+
+        if (Status != AppointmentStatus.Scheduled &&
+            Status != AppointmentStatus.Confirmed &&
+            Status != AppointmentStatus.InProgress)
+            throw new InvalidOperationException("Only scheduled, confirmed, or in-progress appointments can be completed");
 
         Status = AppointmentStatus.Completed;
+
+        if (!string.IsNullOrWhiteSpace(notes))
+        {
+            Notes = string.IsNullOrWhiteSpace(Notes)
+                ? notes
+                : $"{Notes}\n\nCompletion Notes: {notes}";
+        }
+
         SetUpdated();
 
         // Raise domain event

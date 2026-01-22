@@ -1,5 +1,6 @@
 using HospitalAppointmentSystem.Application.Features.Appointments.Commands;
 using HospitalAppointmentSystem.Application.Features.Appointments.Commands.CancelAppointment;
+using HospitalAppointmentSystem.Application.Features.Appointments.Commands.CompleteAppointment;
 using HospitalAppointmentSystem.Application.Features.Appointments.Commands.RescheduleAppointment;
 using HospitalAppointmentSystem.Application.Features.Appointments.Queries.GetAppointmentById;
 using HospitalAppointmentSystem.Application.Features.Appointments.Queries.GetAppointmentsByDoctor;
@@ -214,6 +215,41 @@ public class AppointmentsController : ControllerBase
         var rescheduleCommand = command with { AppointmentId = id };
 
         var result = await _mediator.Send(rescheduleCommand, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error.Contains("not found"))
+                return NotFound(new { Error = result.Error });
+
+            return BadRequest(new { Error = result.Error });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Complete an appointment (Doctor only)
+    /// </summary>
+    /// <param name="id">Appointment ID</param>
+    /// <param name="command">Completion details (optional notes)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success result</returns>
+    [HttpPatch("{id}/complete")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> CompleteAppointment(
+        Guid id,
+        [FromBody] CompleteAppointmentCommand command,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Completing appointment {AppointmentId}", id);
+
+        // Override the AppointmentId from route
+        var completeCommand = command with { AppointmentId = id };
+
+        var result = await _mediator.Send(completeCommand, cancellationToken);
 
         if (!result.IsSuccess)
         {

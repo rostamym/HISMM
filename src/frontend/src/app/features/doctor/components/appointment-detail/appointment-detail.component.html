@@ -1,0 +1,138 @@
+<div class="appointment-detail-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">
+      ← Back to Appointments
+    </button>
+    <h1>Appointment Details</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading appointment details...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadAppointment(appointment?.id || '')">
+      Retry
+    </button>
+  </div>
+
+  <!-- Appointment Details -->
+  <div *ngIf="!loading && !error && appointment" class="appointment-content">
+    <!-- Status Card -->
+    <div class="status-card">
+      <div class="status-header">
+        <h3>Status</h3>
+        <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+          {{ getStatusText(appointment.status) }}
+        </span>
+      </div>
+      <div class="status-actions" *ngIf="canComplete()">
+        <button class="btn-complete" (click)="openCompleteDialog()">
+          ✓ Mark as Completed
+        </button>
+      </div>
+    </div>
+
+    <!-- Patient Information Card -->
+    <div class="info-card">
+      <h3>Patient Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="patient-avatar-large">
+            {{ appointment.patient.firstName.charAt(0) }}{{ appointment.patient.lastName.charAt(0) }}
+          </div>
+          <div class="patient-info">
+            <h4>{{ appointment.patient.firstName }} {{ appointment.patient.lastName }}</h4>
+            <p class="patient-email">{{ appointment.patient.email }}</p>
+            <p class="patient-phone" *ngIf="appointment.patient.phoneNumber">
+              📞 {{ appointment.patient.phoneNumber }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointment Information Card -->
+    <div class="info-card">
+      <h3>Appointment Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Date:</span>
+          <span class="info-value">{{ appointment.scheduledDate | date: 'fullDate' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Time:</span>
+          <span class="info-value">{{ appointment.startTime }} - {{ appointment.endTime }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Duration:</span>
+          <span class="info-value">{{ appointment.durationMinutes }} minutes</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Reason for Visit:</span>
+          <span class="info-value">{{ appointment.reason }}</span>
+        </div>
+        <div class="info-item" *ngIf="appointment.notes">
+          <span class="info-label">Notes:</span>
+          <span class="info-value">{{ appointment.notes }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Created:</span>
+          <span class="info-value">{{ appointment.createdAt | date: 'medium' }}</span>
+        </div>
+        <div class="info-item" *ngIf="appointment.updatedAt">
+          <span class="info-label">Last Updated:</span>
+          <span class="info-value">{{ appointment.updatedAt | date: 'medium' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete Dialog Modal -->
+  <div *ngIf="showCompleteDialog" class="modal-overlay" (click)="closeCompleteDialog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Complete Appointment</h2>
+        <button class="btn-close" (click)="closeCompleteDialog()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          Mark this appointment as completed. You can optionally add notes about the consultation.
+        </p>
+
+        <form [formGroup]="completeForm">
+          <div class="form-group">
+            <label for="notes">Notes (Optional)</label>
+            <textarea
+              id="notes"
+              formControlName="notes"
+              rows="4"
+              placeholder="Add any notes about the consultation..."></textarea>
+            <small class="form-hint">Maximum 500 characters</small>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          class="btn-secondary"
+          (click)="closeCompleteDialog()"
+          [disabled]="completing">
+          Cancel
+        </button>
+        <button
+          class="btn-primary"
+          (click)="confirmComplete()"
+          [disabled]="completing || completeForm.invalid">
+          {{ completing ? 'Completing...' : 'Complete Appointment' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

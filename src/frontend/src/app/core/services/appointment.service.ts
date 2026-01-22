@@ -140,6 +140,19 @@ export class AppointmentService {
   }
 
   /**
+   * Complete an appointment (Doctor only)
+   * @param id Appointment ID
+   * @param notes Optional completion notes
+   * @returns Observable that completes when the appointment is marked as completed
+   */
+  completeAppointment(id: string, notes: string = ''): Observable<void> {
+    return this.http.patch<void>(
+      `${API_ENDPOINTS.APPOINTMENTS.BASE}/${id}/complete`,
+      { notes }
+    );
+  }
+
+  /**
    * Get upcoming appointments for a patient
    * @param patientId Patient ID
    * @returns Observable with list of upcoming appointments

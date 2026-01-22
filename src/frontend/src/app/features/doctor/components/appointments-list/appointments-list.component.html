@@ -1,0 +1,117 @@
+<div class="appointments-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>My Appointments</h1>
+    <p class="subtitle">Manage and view all your appointments</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading appointments...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-message">
+    <p>{{ error }}</p>
+  </div>
+
+  <!-- Appointments Content -->
+  <div *ngIf="!loading && !error" class="appointments-content">
+    <!-- Filters and Search -->
+    <div class="filters-section">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search by patient name or reason..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()">
+        <span class="search-icon">🔍</span>
+      </div>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label>Status:</label>
+          <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange(statusFilter)">
+            <option value="all">All Statuses</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="inprogress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="noshow">No Show</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Date:</label>
+          <select [(ngModel)]="dateFilter" (change)="onDateFilterChange(dateFilter)">
+            <option value="all">All Dates</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="results-count">
+        Showing {{ filteredCount }} of {{ totalAppointments }} appointments
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredAppointments.length === 0" class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No appointments found</h3>
+      <p *ngIf="statusFilter !== 'all' || dateFilter !== 'all' || searchTerm">
+        Try adjusting your filters
+      </p>
+      <p *ngIf="statusFilter === 'all' && dateFilter === 'all' && !searchTerm">
+        You don't have any appointments yet
+      </p>
+    </div>
+
+    <!-- Appointments List -->
+    <div *ngIf="filteredAppointments.length > 0" class="appointments-list">
+      <div
+        *ngFor="let appointment of filteredAppointments"
+        class="appointment-card"
+        (click)="viewDetails(appointment.id)">
+
+        <!-- Date Badge -->
+        <div class="date-badge">
+          <div class="date-day">{{ appointment.scheduledDate | date: 'dd' }}</div>
+          <div class="date-month">{{ appointment.scheduledDate | date: 'MMM' }}</div>
+        </div>
+
+        <!-- Appointment Info -->
+        <div class="appointment-info">
+          <div class="patient-section">
+            <div class="patient-avatar">
+              {{ appointment.patient.firstName.charAt(0) }}{{ appointment.patient.lastName.charAt(0) }}
+            </div>
+            <div class="patient-details">
+              <h3>{{ appointment.patient.firstName }} {{ appointment.patient.lastName }}</h3>
+              <p class="appointment-time">
+                <span class="time-icon">🕐</span>
+                {{ appointment.startTime }} - {{ appointment.endTime }}
+                ({{ appointment.durationMinutes }} min)
+              </p>
+              <p class="appointment-reason">{{ appointment.reason }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status and Actions -->
+        <div class="appointment-status">
+          <span class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+            {{ appointment.status }}
+          </span>
+          <button class="btn-view-details" (click)="viewDetails(appointment.id); $event.stopPropagation()">
+            View Details →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
