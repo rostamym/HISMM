@@ -43,6 +43,7 @@ export const API_ENDPOINTS = {
 
   // Admin
   ADMIN: {
+    STATISTICS: `${API_BASE}/admin/statistics`,
     USERS: `${API_BASE}/admin/users`,
     DOCTORS: `${API_BASE}/admin/doctors`,
     APPOINTMENTS: `${API_BASE}/admin/appointments`,

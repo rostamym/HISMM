@@ -1,0 +1,211 @@
+<div class="appointments-container">
+  <div class="page-header">
+    <h1>Manage Appointments</h1>
+    <p class="subtitle">View and manage all system appointments</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <!-- Search Input -->
+      <div class="filter-group">
+        <label for="search">Search</label>
+        <input
+          id="search"
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          placeholder="Search by patient or doctor name..."
+          class="filter-input"
+        />
+      </div>
+
+      <!-- Status Filter -->
+      <div class="filter-group">
+        <label for="status">Status</label>
+        <select
+          id="status"
+          [(ngModel)]="statusFilter"
+          (change)="onStatusFilterChange()"
+          class="filter-select"
+        >
+          <option value="all">All Statuses</option>
+          <option value="Scheduled">Scheduled</option>
+          <option value="Confirmed">Confirmed</option>
+          <option value="InProgress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="NoShow">No Show</option>
+        </select>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div class="filter-group">
+        <label for="dateRange">Date Range</label>
+        <select
+          id="dateRange"
+          [(ngModel)]="dateRangeFilter"
+          (change)="onDateRangeFilterChange()"
+          class="filter-select"
+        >
+          <option value="all">All Dates</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+
+      <!-- Clear Filters Button -->
+      <div class="filter-group filter-actions">
+        <button
+          (click)="clearFilters()"
+          class="btn-clear-filters"
+          [disabled]="loading"
+        >
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom Date Range Inputs -->
+    <div class="filters-row" *ngIf="showCustomDateInputs">
+      <div class="filter-group">
+        <label for="fromDate">From Date</label>
+        <input
+          id="fromDate"
+          type="date"
+          [(ngModel)]="fromDate"
+          (change)="onCustomDateChange()"
+          class="filter-input"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="toDate">To Date</label>
+        <input
+          id="toDate"
+          type="date"
+          [(ngModel)]="toDate"
+          (change)="onCustomDateChange()"
+          class="filter-input"
+        />
+      </div>
+    </div>
+
+    <!-- Results Counter -->
+    <div class="results-counter" *ngIf="!loading && !error">
+      <p>
+        Showing <strong>{{ filteredCount }}</strong> of
+        <strong>{{ totalCount }}</strong> appointments
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading appointments...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-message">
+      <i class="material-icons">error_outline</i>
+      <p>{{ error }}</p>
+      <button (click)="retry()" class="btn-retry">Retry</button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div
+    class="empty-state"
+    *ngIf="!loading && !error && filteredAppointments.length === 0"
+  >
+    <i class="material-icons">event_busy</i>
+    <h3>No appointments found</h3>
+    <p>Try adjusting your filters or search criteria</p>
+  </div>
+
+  <!-- Appointments Grid -->
+  <div
+    class="appointments-grid"
+    *ngIf="!loading && !error && filteredAppointments.length > 0"
+  >
+    <div
+      *ngFor="let appointment of filteredAppointments"
+      class="appointment-card"
+    >
+      <!-- Date Badge -->
+      <div class="date-badge">
+        <div class="day">{{ appointment.scheduledDate | date: 'dd' }}</div>
+        <div class="month">{{ appointment.scheduledDate | date: 'MMM' }}</div>
+      </div>
+
+      <!-- Appointment Content -->
+      <div class="appointment-content">
+        <!-- Patient Info -->
+        <div class="appointment-section">
+          <h4>Patient</h4>
+          <div class="info-row">
+            <div class="avatar-placeholder">
+              {{ appointment.patient.firstName.charAt(0)
+              }}{{ appointment.patient.lastName.charAt(0) }}
+            </div>
+            <div class="info-details">
+              <p class="name">{{ appointment.patient.fullName }}</p>
+              <p class="contact">{{ appointment.patient.email }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doctor Info -->
+        <div class="appointment-section">
+          <h4>Doctor</h4>
+          <div class="info-row">
+            <div class="avatar-placeholder doctor">
+              {{ appointment.doctor.firstName.charAt(0)
+              }}{{ appointment.doctor.lastName.charAt(0) }}
+            </div>
+            <div class="info-details">
+              <p class="name">{{ appointment.doctor.fullName }}</p>
+              <p class="contact">{{ appointment.doctor.specialtyName }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment Details -->
+        <div class="appointment-details">
+          <div class="detail-item">
+            <i class="material-icons">schedule</i>
+            <span>{{ appointment.formattedTime }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="material-icons">timer</i>
+            <span>{{ appointment.durationMinutes }} minutes</span>
+          </div>
+          <div class="detail-item">
+            <span [class]="'status-badge ' + getStatusClass(appointment.status)">
+              {{ getStatusDisplay(appointment.status) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="appointment-reason">
+          <p><strong>Reason:</strong> {{ appointment.reason }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="appointment-actions">
+          <button
+            (click)="viewAppointmentDetails(appointment.id)"
+            class="btn-view-details"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

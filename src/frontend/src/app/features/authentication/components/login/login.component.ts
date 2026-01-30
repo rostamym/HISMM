@@ -45,6 +45,7 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     this.authService.login(this.loginForm.value).subscribe({
       next: response => {
+        this.loading = false;
         this.notificationService.success('Login successful!');
 
         // Navigate based on user role
@@ -62,6 +63,8 @@ export class LoginComponent implements OnInit {
       error: error => {
         this.loading = false;
         console.error('Login error:', error);
+        const errorMessage = error?.error?.message || 'Invalid email or password. Please try again.';
+        this.notificationService.error(errorMessage);
       }
     });
   }

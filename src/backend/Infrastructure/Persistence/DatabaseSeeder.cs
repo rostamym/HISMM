@@ -26,6 +26,9 @@ public class DatabaseSeeder
     {
         try
         {
+            // Seed Admin User (First!)
+            await SeedAdminAsync();
+
             // Seed Specialties
             await SeedSpecialtiesAsync();
 
@@ -70,6 +73,34 @@ public class DatabaseSeeder
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Seeded {Count} specialties", specialties.Length);
+    }
+
+    private async Task SeedAdminAsync()
+    {
+        // Check if admin user already exists
+        var adminExists = await _context.Users.AnyAsync(u => u.Email == "admin@hospital.com");
+        if (adminExists)
+        {
+            _logger.LogInformation("Admin user already seeded");
+            return;
+        }
+
+        var passwordHash = _passwordHasher.HashPassword("Admin@123");
+
+        var adminUser = User.Create(
+            "admin@hospital.com",
+            passwordHash,
+            "Admin",
+            "User",
+            "+989131234500",
+            new DateTime(1980, 1, 1),
+            UserRole.Administrator
+        );
+
+        _context.Users.Add(adminUser);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Seeded admin user: admin@hospital.com");
     }
 
     private async Task SeedDoctorsAsync()
