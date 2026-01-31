@@ -56,6 +56,8 @@ export const API_ENDPOINTS = {
   ANALYTICS: {
     TRENDS: `${API_BASE}/analytics/appointments/trends`,
     BY_STATUS: `${API_BASE}/analytics/appointments/by-status`,
-    BY_SPECIALTY: `${API_BASE}/analytics/appointments/by-specialty`
+    BY_SPECIALTY: `${API_BASE}/analytics/appointments/by-specialty`,
+    DOCTOR_PERFORMANCE: `${API_BASE}/analytics/doctors/performance`,
+    REVENUE: `${API_BASE}/analytics/revenue`
   }
 };

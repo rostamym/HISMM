@@ -1,6 +1,8 @@
 using HospitalAppointmentSystem.Application.Features.Analytics.Queries.GetAppointmentTrends;
 using HospitalAppointmentSystem.Application.Features.Analytics.Queries.GetAppointmentsByStatus;
 using HospitalAppointmentSystem.Application.Features.Analytics.Queries.GetAppointmentsBySpecialty;
+using HospitalAppointmentSystem.Application.Features.Analytics.Queries.GetDoctorPerformance;
+using HospitalAppointmentSystem.Application.Features.Analytics.Queries.GetRevenueAnalytics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -129,6 +131,88 @@ public class AnalyticsController : ControllerBase
         if (!result.IsSuccess)
         {
             _logger.LogWarning("Failed to get appointments by specialty: {Error}", result.Error);
+            return BadRequest(new { Error = result.Error });
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Get doctor performance metrics
+    /// </summary>
+    /// <param name="startDate">Optional start date for filtering</param>
+    /// <param name="endDate">Optional end date for filtering</param>
+    /// <param name="specialty">Optional specialty filter</param>
+    /// <param name="topCount">Optional top N doctors for leaderboard</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of doctor performance metrics</returns>
+    [HttpGet("doctors/performance")]
+    public async Task<IActionResult> GetDoctorPerformance(
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] string? specialty = null,
+        [FromQuery] int? topCount = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "GetDoctorPerformance called with startDate: {StartDate}, endDate: {EndDate}, specialty: {Specialty}, topCount: {TopCount}",
+            startDate,
+            endDate,
+            specialty,
+            topCount);
+
+        var query = new GetDoctorPerformanceQuery
+        {
+            StartDate = startDate,
+            EndDate = endDate,
+            Specialty = specialty,
+            TopCount = topCount
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed to get doctor performance: {Error}", result.Error);
+            return BadRequest(new { Error = result.Error });
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Get revenue analytics over time
+    /// </summary>
+    /// <param name="period">Period type: daily, weekly, or monthly</param>
+    /// <param name="startDate">Optional start date</param>
+    /// <param name="endDate">Optional end date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of revenue analytics data points</returns>
+    [HttpGet("revenue")]
+    public async Task<IActionResult> GetRevenueAnalytics(
+        [FromQuery] string period = "daily",
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "GetRevenueAnalytics called with period: {Period}, startDate: {StartDate}, endDate: {EndDate}",
+            period,
+            startDate,
+            endDate);
+
+        var query = new GetRevenueAnalyticsQuery
+        {
+            Period = period,
+            StartDate = startDate,
+            EndDate = endDate
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("Failed to get revenue analytics: {Error}", result.Error);
             return BadRequest(new { Error = result.Error });
         }
 
