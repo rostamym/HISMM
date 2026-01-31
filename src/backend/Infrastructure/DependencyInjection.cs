@@ -1,4 +1,7 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using HospitalAppointmentSystem.Application.Common.Interfaces;
+using HospitalAppointmentSystem.Infrastructure.BackgroundJobs;
 using HospitalAppointmentSystem.Infrastructure.Persistence;
 using HospitalAppointmentSystem.Infrastructure.Services;
 using HospitalAppointmentSystem.Infrastructure.Services.Authentication;
@@ -35,7 +38,29 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
 
-        // TODO: Add Identity, Hangfire, etc.
+        // Background Jobs
+        services.AddScoped<AppointmentReminderJob>();
+        services.AddScoped<NoShowMarkerJob>();
+        services.AddScoped<DatabaseCleanupJob>();
+
+        // Hangfire Configuration
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(
+                configuration.GetConnectionString("DefaultConnection"),
+                new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+
+        // Add Hangfire server
+        services.AddHangfireServer();
 
         return services;
     }

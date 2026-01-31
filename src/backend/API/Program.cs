@@ -1,12 +1,14 @@
 using HospitalAppointmentSystem.Application;
 using HospitalAppointmentSystem.Infrastructure;
 using HospitalAppointmentSystem.Infrastructure.Persistence;
+using HospitalAppointmentSystem.Infrastructure.BackgroundJobs;
 using HospitalAppointmentSystem.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
 using Serilog.Events;
+using Hangfire;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -145,6 +147,12 @@ app.UseCors("AllowAngularApp");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Configure Hangfire Dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
 app.MapControllers();
 
     // Seed database with initial data
@@ -164,6 +172,42 @@ app.MapControllers();
             Log.Error(ex, "An error occurred while seeding the database");
         }
     }
+
+    // Configure Recurring Background Jobs
+    Log.Information("Configuring Hangfire recurring jobs...");
+
+    // Appointment Reminder Job - Runs daily at 7:00 AM
+    RecurringJob.AddOrUpdate<AppointmentReminderJob>(
+        "appointment-reminders",
+        job => job.ExecuteAsync(),
+        Cron.Daily(7),
+        new RecurringJobOptions
+        {
+            TimeZone = TimeZoneInfo.Local
+        });
+    Log.Information("Scheduled AppointmentReminderJob to run daily at 7:00 AM");
+
+    // No-Show Marker Job - Runs every 30 minutes
+    RecurringJob.AddOrUpdate<NoShowMarkerJob>(
+        "no-show-marker",
+        job => job.ExecuteAsync(),
+        "*/30 * * * *", // Every 30 minutes
+        new RecurringJobOptions
+        {
+            TimeZone = TimeZoneInfo.Local
+        });
+    Log.Information("Scheduled NoShowMarkerJob to run every 30 minutes");
+
+    // Database Cleanup Job - Runs weekly on Sunday at 2:00 AM
+    RecurringJob.AddOrUpdate<DatabaseCleanupJob>(
+        "database-cleanup",
+        job => job.ExecuteAsync(),
+        Cron.Weekly(DayOfWeek.Sunday, 2),
+        new RecurringJobOptions
+        {
+            TimeZone = TimeZoneInfo.Local
+        });
+    Log.Information("Scheduled DatabaseCleanupJob to run weekly on Sunday at 2:00 AM");
 
     Log.Information("Hospital Appointment System API started successfully");
     app.Run();
