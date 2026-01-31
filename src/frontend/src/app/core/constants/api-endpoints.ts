@@ -50,5 +50,12 @@ export const API_ENDPOINTS = {
     ANALYTICS: `${API_BASE}/admin/analytics`,
     ACTIVATE_USER: (id: string) => `${API_BASE}/admin/users/${id}/activate`,
     DEACTIVATE_USER: (id: string) => `${API_BASE}/admin/users/${id}/deactivate`
+  },
+
+  // Analytics
+  ANALYTICS: {
+    TRENDS: `${API_BASE}/analytics/appointments/trends`,
+    BY_STATUS: `${API_BASE}/analytics/appointments/by-status`,
+    BY_SPECIALTY: `${API_BASE}/analytics/appointments/by-specialty`
   }
 };

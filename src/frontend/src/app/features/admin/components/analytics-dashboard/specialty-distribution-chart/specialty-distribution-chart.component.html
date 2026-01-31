@@ -1,0 +1,20 @@
+<div class="chart-container">
+  <div class="chart-body" *ngIf="!loading && !error">
+    <canvas
+      baseChart
+      [data]="barChartData"
+      [options]="barChartOptions"
+      [type]="barChartType">
+    </canvas>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading specialty data...</p>
+  </div>
+
+  <div class="error-state" *ngIf="error">
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadSpecialtyData()">Retry</button>
+  </div>
+</div>

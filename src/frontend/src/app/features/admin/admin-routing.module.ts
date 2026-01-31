@@ -6,6 +6,7 @@ import { UserRole } from '@core/models/user.model';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { AppointmentsListComponent } from './components/appointments-list/appointments-list.component';
+import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard.component';
 
 const routes: Routes = [
   {
@@ -29,10 +30,13 @@ const routes: Routes = [
       {
         path: 'appointments',
         component: AppointmentsListComponent
+      },
+      {
+        path: 'analytics',
+        component: AnalyticsDashboardComponent
       }
       // Additional routes can be added here:
       // - user detail
-      // - system statistics
       // - reports
     ]
   }

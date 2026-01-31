@@ -8,7 +8,14 @@
       "Bash(findstr:*)",
       "Bash(timeout /t 10 /nobreak)",
       "Bash(taskkill:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd doctor appointments management and mark complete functionality\n\nBackend changes:\n- Add CompleteAppointmentCommand and handler for marking appointments complete\n- Update Appointment entity Complete\\(\\) method to accept optional notes\n- Add CompleteAppointment API endpoint \\(PATCH /api/appointments/{id}/complete\\)\n- Enhanced validation for appointment status transitions\n\nFrontend changes:\n- Create DoctorAppointmentsListComponent with filtering and search\n  - Filter by status \\(scheduled, confirmed, completed, etc.\\)\n  - Filter by date \\(today, week, month\\)\n  - Search by patient name or reason\n- Create DoctorAppointmentDetailComponent\n  - View full appointment details\n  - Mark appointment as completed with optional notes\n  - Modal dialog for completion confirmation\n- Add completeAppointment\\(\\) method to AppointmentService\n- Update doctor routing to include appointments list and detail views\n\nFeatures completed:\n- Feature 2: Doctor Appointments List with filters\n- Feature 3: Mark Complete functionality \\(backend + frontend\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(ng generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(powershell -Command \"netstat -ano | findstr 7001\")"
     ]
   }
 }

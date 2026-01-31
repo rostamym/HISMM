@@ -1,0 +1,20 @@
+<div class="chart-container">
+  <div class="chart-body" *ngIf="!loading && !error">
+    <canvas
+      baseChart
+      [data]="pieChartData"
+      [options]="pieChartOptions"
+      [type]="pieChartType">
+    </canvas>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading status data...</p>
+  </div>
+
+  <div class="error-state" *ngIf="error">
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadStatusData()">Retry</button>
+  </div>
+</div>
