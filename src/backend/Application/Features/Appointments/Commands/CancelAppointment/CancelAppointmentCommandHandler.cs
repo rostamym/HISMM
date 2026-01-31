@@ -14,15 +14,18 @@ public class CancelAppointmentCommandHandler : IRequestHandler<CancelAppointment
 {
     private readonly IApplicationDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly ILogger<CancelAppointmentCommandHandler> _logger;
 
     public CancelAppointmentCommandHandler(
         IApplicationDbContext context,
         IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
         ILogger<CancelAppointmentCommandHandler> logger)
     {
         _context = context;
         _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
         _logger = logger;
     }
 
@@ -72,8 +75,55 @@ public class CancelAppointmentCommandHandler : IRequestHandler<CancelAppointment
                 request.AppointmentId,
                 request.CancellationReason);
 
-            // Send cancellation emails (fire and forget)
-            _ = _emailService.SendAppointmentCancellationAsync(appointment.Id, cancellationToken);
+            // Send cancellation email in background
+            var appointmentId = appointment.Id;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // Get full appointment details
+                    var appointmentDetails = await _context.Appointments
+                        .Include(a => a.Patient)
+                            .ThenInclude(p => p.User)
+                        .Include(a => a.Doctor)
+                            .ThenInclude(d => d.User)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+                    if (appointmentDetails == null)
+                    {
+                        _logger.LogWarning("Appointment not found for cancellation email: {AppointmentId}", appointmentId);
+                        return;
+                    }
+
+                    var formattedTime = $"{appointmentDetails.StartTime:hh\\:mm} - {appointmentDetails.EndTime:hh\\:mm}";
+                    var patientName = appointmentDetails.Patient.User.GetFullName();
+                    var doctorName = appointmentDetails.Doctor.User.GetFullName();
+
+                    // Generate and send cancellation email to patient
+                    var emailContent = _emailTemplateService.GenerateAppointmentCancellation(
+                        patientName,
+                        doctorName,
+                        appointmentDetails.ScheduledDate,
+                        formattedTime,
+                        request.CancellationReason
+                    );
+
+                    await _emailService.SendAsync(
+                        appointmentDetails.Patient.User.Email,
+                        "Appointment Cancelled",
+                        emailContent
+                    );
+
+                    _logger.LogInformation(
+                        "Cancellation email sent to patient {PatientEmail} for appointment {AppointmentId}",
+                        appointmentDetails.Patient.User.Email,
+                        appointmentId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send cancellation email for appointment {AppointmentId}", appointmentId);
+                }
+            });
 
             return Result<bool>.Success(true);
         }

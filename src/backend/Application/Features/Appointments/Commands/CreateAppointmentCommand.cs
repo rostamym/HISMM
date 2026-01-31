@@ -29,15 +29,21 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
 {
     private readonly IApplicationDbContext _context;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly ILogger<CreateAppointmentCommandHandler> _logger;
 
     public CreateAppointmentCommandHandler(
         IApplicationDbContext context,
         IServiceProvider serviceProvider,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
         ILogger<CreateAppointmentCommandHandler> logger)
     {
         _context = context;
         _serviceProvider = serviceProvider;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
         _logger = logger;
     }
 
@@ -153,19 +159,80 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
                 request.PatientId,
                 request.DoctorId);
 
-            // 8. Send confirmation email in background with its own scope
+            // 8. Send confirmation emails in background
             var appointmentId = appointment.Id;
             _ = Task.Run(async () =>
             {
                 try
                 {
+                    // Get full appointment details with patient and doctor info
                     using var scope = _serviceProvider.CreateScope();
-                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                    await emailService.SendAppointmentConfirmationAsync(appointmentId, CancellationToken.None);
+                    var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+                    var appointmentDetails = await context.Appointments
+                        .Include(a => a.Patient)
+                            .ThenInclude(p => p.User)
+                        .Include(a => a.Doctor)
+                            .ThenInclude(d => d.User)
+                        .Include(a => a.Doctor)
+                            .ThenInclude(d => d.Specialty)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+                    if (appointmentDetails == null)
+                    {
+                        _logger.LogWarning("Appointment not found for email sending: {AppointmentId}", appointmentId);
+                        return;
+                    }
+
+                    var formattedTime = $"{appointmentDetails.StartTime:hh\\:mm} - {appointmentDetails.EndTime:hh\\:mm}";
+                    var patientName = appointmentDetails.Patient.User.GetFullName();
+                    var doctorName = appointmentDetails.Doctor.User.GetFullName();
+                    var specialty = appointmentDetails.Doctor.Specialty?.Name ?? "General";
+
+                    // Send confirmation email to patient
+                    var patientEmailContent = _emailTemplateService.GenerateAppointmentConfirmation(
+                        patientName,
+                        doctorName,
+                        specialty,
+                        appointmentDetails.ScheduledDate,
+                        formattedTime,
+                        appointmentDetails.Reason
+                    );
+
+                    await _emailService.SendAsync(
+                        appointmentDetails.Patient.User.Email,
+                        "Appointment Confirmed",
+                        patientEmailContent
+                    );
+
+                    _logger.LogInformation(
+                        "Confirmation email sent to patient {PatientEmail} for appointment {AppointmentId}",
+                        appointmentDetails.Patient.User.Email,
+                        appointmentId);
+
+                    // Send notification email to doctor
+                    var doctorEmailContent = _emailTemplateService.GenerateDoctorNewAppointmentNotification(
+                        doctorName,
+                        patientName,
+                        appointmentDetails.ScheduledDate,
+                        formattedTime,
+                        appointmentDetails.Reason
+                    );
+
+                    await _emailService.SendAsync(
+                        appointmentDetails.Doctor.User.Email,
+                        "New Appointment Scheduled",
+                        doctorEmailContent
+                    );
+
+                    _logger.LogInformation(
+                        "Notification email sent to doctor {DoctorEmail} for appointment {AppointmentId}",
+                        appointmentDetails.Doctor.User.Email,
+                        appointmentId);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to send appointment confirmation email for appointment {AppointmentId}", appointmentId);
+                    _logger.LogError(ex, "Failed to send appointment emails for appointment {AppointmentId}", appointmentId);
                 }
             });
 

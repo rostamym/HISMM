@@ -123,4 +123,13 @@ export class AdminService {
 
     return this.http.get<Appointment[]>(API_ENDPOINTS.ADMIN.APPOINTMENTS, { params });
   }
+
+  /**
+   * Get appointment history for a specific user
+   * @param userId User ID
+   * @returns Observable with list of user's appointments
+   */
+  getUserAppointmentHistory(userId: string): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${API_ENDPOINTS.ADMIN.USERS}/${userId}/appointments`);
+  }
 }

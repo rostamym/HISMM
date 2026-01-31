@@ -3,6 +3,7 @@ using HospitalAppointmentSystem.Application.Features.Admin.Queries.GetAllAppoint
 using HospitalAppointmentSystem.Application.Features.Admin.Queries.GetAllUsers;
 using HospitalAppointmentSystem.Application.Features.Admin.Queries.GetSystemStatistics;
 using HospitalAppointmentSystem.Application.Features.Admin.Queries.GetUserById;
+using HospitalAppointmentSystem.Application.Features.Admin.Queries.GetUserAppointmentHistory;
 using HospitalAppointmentSystem.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -200,6 +201,38 @@ public class AdminController : ControllerBase
 
         if (!result.IsSuccess)
         {
+            return BadRequest(new { Error = result.Error });
+        }
+
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Get appointment history for a specific user
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of user's appointments</returns>
+    [HttpGet("users/{userId}/appointments")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetUserAppointmentHistory(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Getting appointment history for user: {UserId}", userId);
+
+        var query = new GetUserAppointmentHistoryQuery(userId);
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            if (result.Error.Contains("not found"))
+            {
+                return NotFound(new { Error = result.Error });
+            }
             return BadRequest(new { Error = result.Error });
         }
 

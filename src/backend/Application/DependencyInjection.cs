@@ -1,5 +1,7 @@
 using System.Reflection;
 using FluentValidation;
+using HospitalAppointmentSystem.Application.Common.Interfaces;
+using HospitalAppointmentSystem.Application.Common.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HospitalAppointmentSystem.Application;
@@ -22,6 +24,9 @@ public static class DependencyInjection
 
         // Register AutoMapper
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+        // Register application services
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
         // Register MediatR pipeline behaviors (will be added later)
         // services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));

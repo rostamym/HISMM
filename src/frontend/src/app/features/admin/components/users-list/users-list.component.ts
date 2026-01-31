@@ -121,4 +121,24 @@ export class UsersListComponent implements OnInit {
   getStatusBadgeClass(isActive: boolean): string {
     return isActive ? 'badge-active' : 'badge-inactive';
   }
+
+  // Modal properties
+  selectedUser: UserListItem | null = null;
+  showModal: boolean = false;
+
+  /**
+   * Open user detail modal
+   */
+  viewUserDetails(user: UserListItem): void {
+    this.selectedUser = user;
+    this.showModal = true;
+  }
+
+  /**
+   * Close user detail modal
+   */
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedUser = null;
+  }
 }

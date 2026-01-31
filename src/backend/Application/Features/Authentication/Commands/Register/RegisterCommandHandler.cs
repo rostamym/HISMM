@@ -17,17 +17,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
 
     public RegisterCommandHandler(
         IApplicationDbContext context,
         IPasswordHasher passwordHasher,
         IJwtTokenService jwtTokenService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService)
     {
         _context = context;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
         _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
     }
 
     public async Task<Result<AuthenticationResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -87,23 +90,31 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
         var refreshToken = _jwtTokenService.GenerateRefreshToken();
 
-        // Send registration confirmation email (fire and forget - don't block response)
+        // Send welcome email (fire and forget - don't block response)
+        var userEmail = user.Email;
+        var userName = user.GetFullName();
+        var userRoleString = user.Role.ToString();
         _ = Task.Run(async () =>
         {
             try
             {
-                await _emailService.SendRegistrationConfirmationAsync(
-                    user.Email,
-                    user.FirstName,
-                    user.LastName,
-                    cancellationToken);
+                var emailContent = _emailTemplateService.GenerateWelcomeEmail(
+                    userName,
+                    userRoleString
+                );
+
+                await _emailService.SendAsync(
+                    userEmail,
+                    "Welcome to Hospital Appointment System",
+                    emailContent
+                );
             }
             catch (Exception)
             {
                 // Log error but don't fail registration if email fails
                 // Email failures shouldn't prevent user registration
             }
-        }, cancellationToken);
+        });
 
         // Create response
         var response = new AuthenticationResponse

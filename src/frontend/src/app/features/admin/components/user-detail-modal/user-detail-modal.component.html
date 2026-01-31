@@ -1,0 +1,136 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>User Details</h2>
+      <button class="btn-close" (click)="onClose()" aria-label="Close">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- User Information Section -->
+      <div class="section">
+        <h3>Personal Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Full Name</label>
+            <p>{{ user.fullName }}</p>
+          </div>
+          <div class="info-item">
+            <label>Email</label>
+            <p>{{ user.email }}</p>
+          </div>
+          <div class="info-item">
+            <label>Phone Number</label>
+            <p>{{ user.phoneNumber || 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Role</label>
+            <p>
+              <span [class]="'role-badge ' + getRoleClass(user.role)">
+                {{ user.role }}
+              </span>
+            </p>
+          </div>
+          <div class="info-item">
+            <label>Status</label>
+            <p>
+              <span [class]="'status-badge ' + (user.isActive ? 'active' : 'inactive')">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </p>
+          </div>
+          <div class="info-item">
+            <label>Account Created</label>
+            <p>{{ user.createdAt | date: 'medium' }}</p>
+          </div>
+        </div>
+
+        <!-- Doctor-specific Info -->
+        <div *ngIf="user.role === 'Doctor' && user.doctorSpecialty" class="doctor-info">
+          <h4>Doctor Information</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Specialty</label>
+              <p>{{ user.doctorSpecialty }}</p>
+            </div>
+            <div class="info-item">
+              <label>License Number</label>
+              <p>{{ user.doctorLicenseNumber || 'N/A' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointment History Section -->
+      <div class="section" *ngIf="user.role !== 'Administrator'">
+        <h3>Appointment History</h3>
+
+        <!-- Loading State -->
+        <div class="loading-container" *ngIf="loadingAppointments">
+          <div class="spinner"></div>
+          <p>Loading appointment history...</p>
+        </div>
+
+        <!-- Error State -->
+        <div class="error-message" *ngIf="appointmentsError && !loadingAppointments">
+          <p>{{ appointmentsError }}</p>
+          <button (click)="loadAppointmentHistory()" class="btn-retry">
+            Retry
+          </button>
+        </div>
+
+        <!-- Appointments Table -->
+        <div
+          class="appointments-table-container"
+          *ngIf="!loadingAppointments && !appointmentsError"
+        >
+          <div *ngIf="appointments.length === 0" class="empty-state">
+            <p>No appointments found</p>
+          </div>
+
+          <table *ngIf="appointments.length > 0" class="appointments-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th *ngIf="user.role === 'Patient'">Doctor</th>
+                <th *ngIf="user.role === 'Doctor'">Patient</th>
+                <th>Reason</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let appointment of appointments">
+                <td>{{ formatDate(appointment.scheduledDate) }}</td>
+                <td>{{ appointment.formattedTime }}</td>
+                <td *ngIf="user.role === 'Patient'">
+                  {{ appointment.doctor.fullName }}<br />
+                  <small>{{ appointment.doctor.specialtyName }}</small>
+                </td>
+                <td *ngIf="user.role === 'Doctor'">
+                  {{ appointment.patient.fullName }}
+                </td>
+                <td>{{ appointment.reason }}</td>
+                <td>
+                  <span
+                    [class]="'status-badge ' + getStatusClass(appointment.status)"
+                  >
+                    {{ getStatusDisplay(appointment.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="onClose()">Close</button>
+    </div>
+  </div>
+</div>

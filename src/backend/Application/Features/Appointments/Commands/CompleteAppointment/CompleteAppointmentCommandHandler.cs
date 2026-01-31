@@ -10,13 +10,19 @@ namespace HospitalAppointmentSystem.Application.Features.Appointments.Commands.C
 public class CompleteAppointmentCommandHandler : IRequestHandler<CompleteAppointmentCommand, Result<bool>>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly ILogger<CompleteAppointmentCommandHandler> _logger;
 
     public CompleteAppointmentCommandHandler(
         IApplicationDbContext context,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
         ILogger<CompleteAppointmentCommandHandler> logger)
     {
         _context = context;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
         _logger = logger;
     }
 
@@ -64,6 +70,55 @@ public class CompleteAppointmentCommandHandler : IRequestHandler<CompleteAppoint
             _logger.LogInformation(
                 "Appointment {AppointmentId} marked as completed successfully",
                 request.AppointmentId);
+
+            // Send completion email in background
+            var appointmentId = appointment.Id;
+            var notes = request.Notes ?? string.Empty;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // Get full appointment details
+                    var appointmentDetails = await _context.Appointments
+                        .Include(a => a.Patient)
+                            .ThenInclude(p => p.User)
+                        .Include(a => a.Doctor)
+                            .ThenInclude(d => d.User)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+                    if (appointmentDetails == null)
+                    {
+                        _logger.LogWarning("Appointment not found for completion email: {AppointmentId}", appointmentId);
+                        return;
+                    }
+
+                    var patientName = appointmentDetails.Patient.User.GetFullName();
+                    var doctorName = appointmentDetails.Doctor.User.GetFullName();
+
+                    // Generate and send completion email to patient
+                    var emailContent = _emailTemplateService.GenerateAppointmentCompleted(
+                        patientName,
+                        doctorName,
+                        appointmentDetails.ScheduledDate,
+                        notes
+                    );
+
+                    await _emailService.SendAsync(
+                        appointmentDetails.Patient.User.Email,
+                        "Appointment Completed",
+                        emailContent
+                    );
+
+                    _logger.LogInformation(
+                        "Completion email sent to patient {PatientEmail} for appointment {AppointmentId}",
+                        appointmentDetails.Patient.User.Email,
+                        appointmentId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send completion email for appointment {AppointmentId}", appointmentId);
+                }
+            });
 
             return Result<bool>.Success(true);
         }

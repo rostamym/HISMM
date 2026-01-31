@@ -14,15 +14,18 @@ public class RescheduleAppointmentCommandHandler : IRequestHandler<RescheduleApp
 {
     private readonly IApplicationDbContext _context;
     private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly ILogger<RescheduleAppointmentCommandHandler> _logger;
 
     public RescheduleAppointmentCommandHandler(
         IApplicationDbContext context,
         IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
         ILogger<RescheduleAppointmentCommandHandler> logger)
     {
         _context = context;
         _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
         _logger = logger;
     }
 
@@ -122,6 +125,12 @@ public class RescheduleAppointmentCommandHandler : IRequestHandler<RescheduleApp
                 return Result<bool>.Failure("The new time slot is already booked. Please select another time slot.");
             }
 
+            // Store old date/time before rescheduling
+            var oldDate = appointment.ScheduledDate;
+            var oldStartTime = appointment.StartTime;
+            var oldEndTime = appointment.EndTime;
+            var oldFormattedTime = $"{oldStartTime:hh\\:mm} - {oldEndTime:hh\\:mm}";
+
             // Reschedule the appointment using domain method
             appointment.Reschedule(
                 request.NewScheduledDate,
@@ -138,8 +147,56 @@ public class RescheduleAppointmentCommandHandler : IRequestHandler<RescheduleApp
                 newStartTime,
                 newEndTime);
 
-            // Send notification emails (fire and forget)
-            _ = _emailService.SendAppointmentConfirmationAsync(appointment.Id, cancellationToken);
+            // Send reschedule notification email in background
+            var appointmentId = appointment.Id;
+            var newFormattedTime = $"{newStartTime:hh\\:mm} - {newEndTime:hh\\:mm}";
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // Get full appointment details
+                    var appointmentDetails = await _context.Appointments
+                        .Include(a => a.Patient)
+                            .ThenInclude(p => p.User)
+                        .Include(a => a.Doctor)
+                            .ThenInclude(d => d.User)
+                        .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+                    if (appointmentDetails == null)
+                    {
+                        _logger.LogWarning("Appointment not found for reschedule email: {AppointmentId}", appointmentId);
+                        return;
+                    }
+
+                    var patientName = appointmentDetails.Patient.User.GetFullName();
+                    var doctorName = appointmentDetails.Doctor.User.GetFullName();
+
+                    // Generate and send reschedule email to patient
+                    var emailContent = _emailTemplateService.GenerateAppointmentRescheduled(
+                        patientName,
+                        doctorName,
+                        oldDate,
+                        oldFormattedTime,
+                        request.NewScheduledDate,
+                        newFormattedTime
+                    );
+
+                    await _emailService.SendAsync(
+                        appointmentDetails.Patient.User.Email,
+                        "Appointment Rescheduled",
+                        emailContent
+                    );
+
+                    _logger.LogInformation(
+                        "Reschedule email sent to patient {PatientEmail} for appointment {AppointmentId}",
+                        appointmentDetails.Patient.User.Email,
+                        appointmentId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to send reschedule email for appointment {AppointmentId}", appointmentId);
+                }
+            });
 
             return Result<bool>.Success(true);
         }

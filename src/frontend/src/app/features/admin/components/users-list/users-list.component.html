@@ -80,13 +80,21 @@
           </td>
           <td>{{ user.createdAt | date: 'MMM d, y' }}</td>
           <td>
-            <button
-              class="btn-toggle"
-              [class.btn-deactivate]="user.isActive"
-              [class.btn-activate]="!user.isActive"
-              (click)="toggleUserStatus(user.id)">
-              {{ user.isActive ? 'Deactivate' : 'Activate' }}
-            </button>
+            <div class="action-buttons">
+              <button
+                class="btn-view"
+                (click)="viewUserDetails(user)"
+                title="View Details">
+                View
+              </button>
+              <button
+                class="btn-toggle"
+                [class.btn-deactivate]="user.isActive"
+                [class.btn-activate]="!user.isActive"
+                (click)="toggleUserStatus(user.id)">
+                {{ user.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -98,3 +106,10 @@
     </div>
   </div>
 </div>
+
+<!-- User Detail Modal -->
+<app-user-detail-modal
+  *ngIf="showModal && selectedUser"
+  [user]="selectedUser"
+  (close)="closeModal()">
+</app-user-detail-modal>

@@ -5,12 +5,14 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { UsersListComponent } from './components/users-list/users-list.component';
 import { AppointmentsListComponent } from './components/appointments-list/appointments-list.component';
+import { UserDetailModalComponent } from './components/user-detail-modal/user-detail-modal.component';
 
 @NgModule({
   declarations: [
     DashboardComponent,
     UsersListComponent,
-    AppointmentsListComponent
+    AppointmentsListComponent,
+    UserDetailModalComponent
   ],
   imports: [
     CommonModule,
