@@ -11,6 +11,8 @@ import { AnalyticsDashboardComponent } from './components/analytics-dashboard/an
 import { AppointmentTrendsChartComponent } from './components/analytics-dashboard/appointment-trends-chart/appointment-trends-chart.component';
 import { StatusDistributionChartComponent } from './components/analytics-dashboard/status-distribution-chart/status-distribution-chart.component';
 import { SpecialtyDistributionChartComponent } from './components/analytics-dashboard/specialty-distribution-chart/specialty-distribution-chart.component';
+import { DoctorPerformanceTableComponent } from './components/analytics-dashboard/doctor-performance-table/doctor-performance-table.component';
+import { RevenueChartComponent } from './components/analytics-dashboard/revenue-chart/revenue-chart.component';
 
 @NgModule({
   declarations: [
@@ -21,7 +23,9 @@ import { SpecialtyDistributionChartComponent } from './components/analytics-dash
     AnalyticsDashboardComponent,
     AppointmentTrendsChartComponent,
     StatusDistributionChartComponent,
-    SpecialtyDistributionChartComponent
+    SpecialtyDistributionChartComponent,
+    DoctorPerformanceTableComponent,
+    RevenueChartComponent
   ],
   imports: [
     CommonModule,
